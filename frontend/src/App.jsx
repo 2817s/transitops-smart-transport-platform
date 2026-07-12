@@ -12,6 +12,7 @@ import Fleet from "./pages/Fleet";
 import Drivers from "./pages/Drivers";
 import Trips from "./pages/Trips";
 import Maintenance from "./pages/Maintenance";
+import FuelExpenses from "./pages/FuelExpenses";
 
 function App() {
   return (
@@ -63,6 +64,15 @@ function App() {
   element={
     <ProtectedRoute>
       <Maintenance />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/fuel-expenses"
+  element={
+    <ProtectedRoute>
+      <FuelExpenses />
     </ProtectedRoute>
   }
 />

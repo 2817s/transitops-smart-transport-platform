@@ -49,7 +49,7 @@ const navigationItems = [
   },
   {
     label: "Fuel & Expenses",
-    path: "/expenses",
+    path: "/fuel-expenses",
     icon: Fuel,
   },
   {
@@ -63,7 +63,8 @@ function Layout({ children }) {
   const navigate = useNavigate();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] =
+    useState(false);
 
   const user = JSON.parse(
     localStorage.getItem("transitops_user") || "{}"
@@ -90,6 +91,7 @@ function Layout({ children }) {
     >
       {sidebarOpen && (
         <button
+          type="button"
           className="mobile-overlay"
           onClick={() => setSidebarOpen(false)}
           aria-label="Close navigation"
@@ -114,6 +116,7 @@ function Layout({ children }) {
           )}
 
           <button
+            type="button"
             className="mobile-close"
             onClick={() => setSidebarOpen(false)}
             aria-label="Close sidebar"
@@ -134,7 +137,9 @@ function Layout({ children }) {
               <NavLink
                 key={item.path}
                 to={item.path}
-                title={sidebarCollapsed ? item.label : undefined}
+                title={
+                  sidebarCollapsed ? item.label : undefined
+                }
                 onClick={() => setSidebarOpen(false)}
               >
                 <Icon size={20} />
@@ -151,7 +156,10 @@ function Layout({ children }) {
           <NavLink
             to="/settings"
             className="sidebar-settings-link"
-            title={sidebarCollapsed ? "Settings" : undefined}
+            title={
+              sidebarCollapsed ? "Settings" : undefined
+            }
+            onClick={() => setSidebarOpen(false)}
           >
             <Settings size={20} />
 
@@ -177,6 +185,7 @@ function Layout({ children }) {
           </div>
 
           <button
+            type="button"
             className="logout-button"
             onClick={handleLogout}
             title={sidebarCollapsed ? "Logout" : undefined}
@@ -188,6 +197,7 @@ function Layout({ children }) {
         </div>
 
         <button
+          type="button"
           className="sidebar-collapse-button"
           onClick={() =>
             setSidebarCollapsed((current) => !current)
@@ -205,6 +215,7 @@ function Layout({ children }) {
       <main className="app-main">
         <header className="app-topbar">
           <button
+            type="button"
             className="mobile-menu-button"
             onClick={() => setSidebarOpen(true)}
             aria-label="Open navigation"
