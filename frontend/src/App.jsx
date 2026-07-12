@@ -11,6 +11,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Fleet from "./pages/Fleet";
 import Drivers from "./pages/Drivers";
 import Trips from "./pages/Trips";
+import Maintenance from "./pages/Maintenance";
 
 function App() {
   return (
@@ -53,6 +54,15 @@ function App() {
   element={
     <ProtectedRoute>
       <Trips />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/maintenance"
+  element={
+    <ProtectedRoute>
+      <Maintenance />
     </ProtectedRoute>
   }
 />
