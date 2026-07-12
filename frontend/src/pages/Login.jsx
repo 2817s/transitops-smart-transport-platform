@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import api from "../services/api";
 import "./Login.css";
@@ -10,6 +11,7 @@ const roles = [
 ];
 
 function Login() {
+    const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -46,9 +48,7 @@ function Login() {
         JSON.stringify(response.data.user)
       );
 
-      alert(
-        `Welcome ${response.data.user.name} - ${response.data.user.role}`
-      );
+      navigate("/dashboard");
     } catch (error) {
       setError(
         error.response?.data?.message ||
