@@ -8,6 +8,7 @@ import {
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Fleet from "./pages/Fleet";
 
 function App() {
   return (
@@ -26,6 +27,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+  path="/fleet"
+  element={
+    <ProtectedRoute>
+      <Fleet />
+    </ProtectedRoute>
+  }
+/>
 
         <Route
           path="/"
