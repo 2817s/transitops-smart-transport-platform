@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Fleet from "./pages/Fleet";
 import Drivers from "./pages/Drivers";
+import Trips from "./pages/Trips";
 
 function App() {
   return (
@@ -43,6 +44,15 @@ function App() {
   element={
     <ProtectedRoute>
       <Drivers />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/trips"
+  element={
+    <ProtectedRoute>
+      <Trips />
     </ProtectedRoute>
   }
 />
