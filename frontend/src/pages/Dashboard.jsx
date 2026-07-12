@@ -1,4 +1,7 @@
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
+  AlertTriangle,
   ArrowUpRight,
   BusFront,
   CircleCheckBig,
@@ -9,107 +12,235 @@ import {
   UserRoundCheck,
   Wrench,
 } from "lucide-react";
+
 import Layout from "../components/Layout";
+import api from "../services/api";
 import "./Dashboard.css";
 
-const kpis = [
-  {
-    title: "Active Vehicles",
-    value: "53",
-    change: "+8.2%",
-    note: "4 added this month",
-    icon: Truck,
-    tone: "indigo",
+const emptyDashboard = {
+  summary: {
+    totalVehicles: 0,
+    availableVehicles: 0,
+    onTripVehicles: 0,
+    maintenanceVehicles: 0,
+    totalDrivers: 0,
+    availableDrivers: 0,
+    activeTrips: 0,
+    completedTrips: 0,
+    fleetUtilization: 0,
+    totalOperationalCost: 0,
   },
-  {
-    title: "Available Vehicles",
-    value: "42",
-    change: "+5.1%",
-    note: "Ready for dispatch",
-    icon: CircleCheckBig,
-    tone: "emerald",
-  },
-  {
-    title: "In Maintenance",
-    value: "5",
-    change: "-2",
-    note: "2 completing today",
-    icon: Wrench,
-    tone: "amber",
-  },
-  {
-    title: "Active Trips",
-    value: "18",
-    change: "+12.4%",
-    note: "Across 3 regions",
-    icon: Route,
-    tone: "blue",
-  },
-  {
-    title: "Pending Trips",
-    value: "9",
-    change: "3 urgent",
-    note: "Awaiting dispatch",
-    icon: Clock3,
-    tone: "rose",
-  },
-  {
-    title: "Drivers On Duty",
-    value: "26",
-    change: "81%",
-    note: "Current availability",
-    icon: UserRoundCheck,
-    tone: "cyan",
-  },
-  {
-    title: "Fleet Utilization",
-    value: "87%",
-    change: "+6.3%",
-    note: "Above monthly target",
-    icon: Gauge,
-    tone: "violet",
-  },
-];
 
-const trips = [
-  {
-    id: "TR001",
-    route: "Gandhinagar → Ahmedabad",
-    vehicle: "VAN-05",
-    driver: "Alex",
-    status: "On Trip",
-    eta: "45 min",
+  vehicles: {
+    total: 0,
+    available: 0,
+    onTrip: 0,
+    inShop: 0,
+    retired: 0,
   },
-  {
-    id: "TR002",
-    route: "Vadodara → Surat",
-    vehicle: "TRK-12",
-    driver: "John",
-    status: "Completed",
-    eta: "Done",
+
+  drivers: {
+    total: 0,
+    available: 0,
+    onTrip: 0,
+    offDuty: 0,
+    suspended: 0,
   },
-  {
-    id: "TR003",
-    route: "Ahmedabad → Rajkot",
-    vehicle: "MINI-08",
-    driver: "Priya",
-    status: "Dispatched",
-    eta: "2h 10m",
+
+  trips: {
+    total: 0,
+    draft: 0,
+    dispatched: 0,
+    completed: 0,
+    cancelled: 0,
   },
-  {
-    id: "TR004",
-    route: "Anand → Gandhinagar",
-    vehicle: "VAN-09",
-    driver: "Suresh",
-    status: "Draft",
-    eta: "Pending",
+
+  costs: {
+    fuelCost: 0,
+    otherExpenses: 0,
+    maintenanceCost: 0,
+    totalOperationalCost: 0,
   },
-];
+
+  recentTrips: [],
+};
 
 function Dashboard() {
+  const navigate = useNavigate();
+
+  const [dashboard, setDashboard] =
+    useState(emptyDashboard);
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const user = JSON.parse(
     localStorage.getItem("transitops_user") || "{}"
   );
+
+  const loadDashboard = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await api.get(
+        "/dashboard/overview"
+      );
+
+      setDashboard(
+        response.data.data || emptyDashboard
+      );
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "Unable to load dashboard data"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDashboard();
+  }, []);
+
+  const activeVehicles =
+    Number(dashboard.vehicles.total || 0) -
+    Number(dashboard.vehicles.retired || 0);
+
+  const driversOnDuty =
+    Number(dashboard.drivers.available || 0) +
+    Number(dashboard.drivers.onTrip || 0);
+
+  const kpis = [
+    {
+      title: "Active Vehicles",
+      value: activeVehicles,
+      change: `${dashboard.vehicles.total} total`,
+      note: "Excluding retired vehicles",
+      icon: Truck,
+      tone: "indigo",
+    },
+    {
+      title: "Available Vehicles",
+      value: dashboard.vehicles.available,
+      change: `${dashboard.vehicles.onTrip} on trip`,
+      note: "Ready for dispatch",
+      icon: CircleCheckBig,
+      tone: "emerald",
+    },
+    {
+      title: "In Maintenance",
+      value: dashboard.vehicles.inShop,
+      change: `${dashboard.costs.maintenanceCost.toLocaleString(
+        "en-IN"
+      )} cost`,
+      note: "Vehicles currently in shop",
+      icon: Wrench,
+      tone: "amber",
+    },
+    {
+      title: "Active Trips",
+      value: dashboard.trips.dispatched,
+      change: `${dashboard.trips.completed} completed`,
+      note: "Currently dispatched",
+      icon: Route,
+      tone: "blue",
+    },
+    {
+      title: "Pending Trips",
+      value: dashboard.trips.draft,
+      change: `${dashboard.trips.cancelled} cancelled`,
+      note: "Awaiting dispatch",
+      icon: Clock3,
+      tone: "rose",
+    },
+    {
+      title: "Drivers On Duty",
+      value: driversOnDuty,
+      change: `${dashboard.drivers.available} available`,
+      note: `${dashboard.drivers.total} total drivers`,
+      icon: UserRoundCheck,
+      tone: "cyan",
+    },
+    {
+      title: "Fleet Utilization",
+      value: `${dashboard.summary.fleetUtilization}%`,
+      change: `${dashboard.vehicles.onTrip}/${dashboard.vehicles.total}`,
+      note: "Vehicles currently operating",
+      icon: Gauge,
+      tone: "violet",
+    },
+  ];
+
+  const fleetPercentages = useMemo(() => {
+    const total = Number(
+      dashboard.vehicles.total || 0
+    );
+
+    if (total === 0) {
+      return {
+        available: 0,
+        onTrip: 0,
+        inShop: 0,
+      };
+    }
+
+    return {
+      available:
+        (Number(dashboard.vehicles.available || 0) /
+          total) *
+        100,
+
+      onTrip:
+        (Number(dashboard.vehicles.onTrip || 0) /
+          total) *
+        100,
+
+      inShop:
+        (Number(dashboard.vehicles.inShop || 0) /
+          total) *
+        100,
+    };
+  }, [dashboard.vehicles]);
+
+  const fleetRingStyle = {
+    background: `conic-gradient(
+      #10b981 0% ${fleetPercentages.available}%,
+      #3b82f6 ${fleetPercentages.available}% ${
+        fleetPercentages.available +
+        fleetPercentages.onTrip
+      }%,
+      #f59e0b ${
+        fleetPercentages.available +
+        fleetPercentages.onTrip
+      }% ${
+        fleetPercentages.available +
+        fleetPercentages.onTrip +
+        fleetPercentages.inShop
+      }%,
+      #ef4444 ${
+        fleetPercentages.available +
+        fleetPercentages.onTrip +
+        fleetPercentages.inShop
+      }% 100%
+    )`,
+  };
+
+  const getTripDistance = (trip) => {
+    if (
+      trip.status === "Completed" &&
+      Number(trip.actual_distance || 0) > 0
+    ) {
+      return `${Number(
+        trip.actual_distance
+      ).toLocaleString("en-IN")} km`;
+    }
+
+    return `${Number(
+      trip.planned_distance || 0
+    ).toLocaleString("en-IN")} km`;
+  };
 
   return (
     <Layout>
@@ -123,19 +254,23 @@ function Dashboard() {
             <h1>
               Welcome back,{" "}
               <span>
-                {(user.name || "Operator").split(" ")[0]}
+                {(user.name || "Operator").split(
+                  " "
+                )[0]}
               </span>
             </h1>
 
             <p>
-              Your fleet is moving efficiently. Here's the
-              live operational picture.
+              Your live operational picture is powered by
+              TransitOps fleet data.
             </p>
           </div>
 
           <div className="hero-actions">
             <select defaultValue="all">
-              <option value="all">All vehicle types</option>
+              <option value="all">
+                All vehicle types
+              </option>
               <option value="van">Van</option>
               <option value="truck">Truck</option>
               <option value="mini">Mini</option>
@@ -143,17 +278,37 @@ function Dashboard() {
 
             <select defaultValue="all">
               <option value="all">All regions</option>
-              <option value="ahmedabad">Ahmedabad</option>
-              <option value="gandhinagar">Gandhinagar</option>
-              <option value="vadodara">Vadodara</option>
+              <option value="ahmedabad">
+                Ahmedabad
+              </option>
+              <option value="gandhinagar">
+                Gandhinagar
+              </option>
+              <option value="vadodara">
+                Vadodara
+              </option>
             </select>
 
-            <button>
-              Live Operations
+            <button
+              type="button"
+              onClick={loadDashboard}
+              disabled={loading}
+            >
+              {loading
+                ? "Refreshing..."
+                : "Live Operations"}
+
               <ArrowUpRight size={17} />
             </button>
           </div>
         </section>
+
+        {error && (
+          <div className="dashboard-error-message">
+            <AlertTriangle size={18} />
+            {error}
+          </div>
+        )}
 
         <section className="kpi-grid">
           {kpis.map((kpi) => {
@@ -174,7 +329,10 @@ function Dashboard() {
                   </span>
                 </div>
 
-                <strong>{kpi.value}</strong>
+                <strong>
+                  {loading ? "—" : kpi.value}
+                </strong>
+
                 <h3>{kpi.title}</h3>
                 <p>{kpi.note}</p>
               </article>
@@ -193,64 +351,91 @@ function Dashboard() {
                 <h2>Recent Trips</h2>
 
                 <p>
-                  Latest fleet movements and delivery status
+                  Latest fleet movements and delivery
+                  status
                 </p>
               </div>
 
-              <button className="text-action">
+              <button
+                type="button"
+                className="text-action"
+                onClick={() => navigate("/trips")}
+              >
                 View all trips
                 <ArrowUpRight size={16} />
               </button>
             </div>
 
             <div className="table-wrapper">
-              <table className="operations-table">
-                <thead>
-                  <tr>
-                    <th>Trip</th>
-                    <th>Route</th>
-                    <th>Vehicle</th>
-                    <th>Driver</th>
-                    <th>Status</th>
-                    <th>ETA</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {trips.map((trip) => (
-                    <tr key={trip.id}>
-                      <td>
-                        <strong className="trip-id">
-                          {trip.id}
-                        </strong>
-                      </td>
-
-                      <td>
-                        <div className="route-cell">
-                          <BusFront size={16} />
-                          {trip.route}
-                        </div>
-                      </td>
-
-                      <td>{trip.vehicle}</td>
-                      <td>{trip.driver}</td>
-
-                      <td>
-                        <span
-                          className={`status-pill status-${trip.status
-                            .toLowerCase()
-                            .replaceAll(" ", "-")}`}
-                        >
-                          <i />
-                          {trip.status}
-                        </span>
-                      </td>
-
-                      <td>{trip.eta}</td>
+              {loading ? (
+                <div className="dashboard-table-empty">
+                  Loading recent trips...
+                </div>
+              ) : dashboard.recentTrips.length === 0 ? (
+                <div className="dashboard-table-empty">
+                  No trip records found.
+                </div>
+              ) : (
+                <table className="operations-table">
+                  <thead>
+                    <tr>
+                      <th>Trip</th>
+                      <th>Route</th>
+                      <th>Vehicle</th>
+                      <th>Driver</th>
+                      <th>Status</th>
+                      <th>Distance</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+
+                  <tbody>
+                    {dashboard.recentTrips.map(
+                      (trip) => (
+                        <tr key={trip.id}>
+                          <td>
+                            <strong className="trip-id">
+                              {trip.trip_number}
+                            </strong>
+                          </td>
+
+                          <td>
+                            <div className="route-cell">
+                              <BusFront size={16} />
+                              {trip.source} →{" "}
+                              {trip.destination}
+                            </div>
+                          </td>
+
+                          <td>
+                            {trip.vehicle_name || "—"}
+                          </td>
+
+                          <td>
+                            {trip.driver_name || "—"}
+                          </td>
+
+                          <td>
+                            <span
+                              className={`status-pill status-${String(
+                                trip.status
+                              )
+                                .toLowerCase()
+                                .replaceAll(" ", "-")}`}
+                            >
+                              <i />
+                              {trip.status}
+                            </span>
+                          </td>
+
+                          <td>
+                            {getTripDistance(trip)}
+                          </td>
+                        </tr>
+                      )
+                    )}
+                  </tbody>
+                </table>
+              )}
             </div>
           </article>
 
@@ -267,9 +452,14 @@ function Dashboard() {
               </div>
             </div>
 
-            <div className="fleet-ring">
+            <div
+              className="fleet-ring"
+              style={fleetRingStyle}
+            >
               <div className="fleet-ring-inner">
-                <strong>68</strong>
+                <strong>
+                  {dashboard.vehicles.total}
+                </strong>
                 <span>Total Fleet</span>
               </div>
             </div>
@@ -280,7 +470,10 @@ function Dashboard() {
                   <i className="available-dot" />
                   Available
                 </span>
-                <strong>42</strong>
+
+                <strong>
+                  {dashboard.vehicles.available}
+                </strong>
               </div>
 
               <div>
@@ -288,7 +481,10 @@ function Dashboard() {
                   <i className="trip-dot" />
                   On Trip
                 </span>
-                <strong>18</strong>
+
+                <strong>
+                  {dashboard.vehicles.onTrip}
+                </strong>
               </div>
 
               <div>
@@ -296,7 +492,10 @@ function Dashboard() {
                   <i className="shop-dot" />
                   In Shop
                 </span>
-                <strong>5</strong>
+
+                <strong>
+                  {dashboard.vehicles.inShop}
+                </strong>
               </div>
 
               <div>
@@ -304,7 +503,10 @@ function Dashboard() {
                   <i className="retired-dot" />
                   Retired
                 </span>
-                <strong>3</strong>
+
+                <strong>
+                  {dashboard.vehicles.retired}
+                </strong>
               </div>
             </div>
           </article>

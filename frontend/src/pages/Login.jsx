@@ -1,5 +1,21 @@
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  ArrowRight,
+  BarChart3,
+  BusFront,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Fuel,
+  LockKeyhole,
+  Mail,
+  Route,
+  ShieldCheck,
+  Sparkles,
+  UserRound,
+} from "lucide-react";
+
 import api from "../services/api";
 import "./Login.css";
 
@@ -11,32 +27,49 @@ const roles = [
 ];
 
 function Login() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+
+  const rememberedEmail =
+    localStorage.getItem(
+      "transitops_remembered_email"
+    ) || "";
+
   const [formData, setFormData] = useState({
-    email: "",
+    email: rememberedEmail,
     password: "",
     role: "Dispatcher",
   });
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(
+    Boolean(rememberedEmail)
+  );
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (event) => {
-    setFormData({
-      ...formData,
-      [event.target.name]: event.target.value,
-    });
+    const { name, value } = event.target;
+
+    setFormData((current) => ({
+      ...current,
+      [name]: value,
+    }));
 
     setError("");
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setLoading(true);
-    setError("");
 
     try {
-      const response = await api.post("/auth/login", formData);
+      setLoading(true);
+      setError("");
+
+      const response = await api.post(
+        "/auth/login",
+        formData
+      );
 
       localStorage.setItem(
         "transitops_token",
@@ -48,10 +81,21 @@ function Login() {
         JSON.stringify(response.data.user)
       );
 
+      if (rememberMe) {
+        localStorage.setItem(
+          "transitops_remembered_email",
+          formData.email
+        );
+      } else {
+        localStorage.removeItem(
+          "transitops_remembered_email"
+        );
+      }
+
       navigate("/dashboard");
-    } catch (error) {
+    } catch (requestError) {
       setError(
-        error.response?.data?.message ||
+        requestError.response?.data?.message ||
           "Unable to connect to TransitOps"
       );
     } finally {
@@ -60,74 +104,256 @@ function Login() {
   };
 
   return (
-    <div className="login-page">
-      <div className="login-brand">
-        <h1>TransitOps</h1>
-        <p>Smart Transport Operations Platform</p>
+    <main className="auth-page">
+      <section className="auth-showcase">
+        <div className="auth-glow auth-glow-one" />
+        <div className="auth-glow auth-glow-two" />
 
-        <div className="role-list">
-          <h3>One login, four roles</h3>
-          <span>Fleet Manager</span>
-          <span>Dispatcher</span>
-          <span>Safety Officer</span>
-          <span>Financial Analyst</span>
-        </div>
-      </div>
-
-      <div className="login-section">
-        <form className="login-card" onSubmit={handleSubmit}>
-          <h2>Welcome Back</h2>
-          <p>Sign in to manage transport operations</p>
-
-          <label>Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="Enter email"
-            required
-          />
-
-          <label>Password</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Enter password"
-            required
-          />
-
-          <label>Role</label>
-          <select
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-          >
-            {roles.map((role) => (
-              <option key={role} value={role}>
-                {role}
-              </option>
-            ))}
-          </select>
-
-          {error && (
-            <div className="error-message">{error}</div>
-          )}
-
-          <button type="submit" disabled={loading}>
-            {loading ? "Signing In..." : "Sign In"}
-          </button>
-
-          <div className="demo-account">
-            <strong>Demo account</strong>
-            <span>dispatcher@transitops.in</span>
-            <span>Dispatch@123</span>
+        <div className="auth-brand">
+          <div className="auth-brand-icon">
+            <BusFront size={28} />
           </div>
-        </form>
-      </div>
-    </div>
+
+          <div>
+            <strong>TransitOps</strong>
+            <span>Command Center</span>
+          </div>
+        </div>
+
+        <div className="auth-showcase-content">
+          <div className="auth-live-badge">
+            <span />
+            SMART TRANSPORT OPERATIONS
+          </div>
+
+          <h1>
+            Move every operation with{" "}
+            <span>clarity and control.</span>
+          </h1>
+
+          <p>
+            A secure command center for fleet visibility,
+            dispatch management, maintenance, costs and
+            operational intelligence.
+          </p>
+
+          <div className="auth-feature-grid">
+            <article>
+              <div>
+                <Route size={20} />
+              </div>
+              <strong>Live Dispatch</strong>
+              <span>
+                Track trips, vehicles and drivers in real time.
+              </span>
+            </article>
+
+            <article>
+              <div>
+                <ShieldCheck size={20} />
+              </div>
+              <strong>Secure RBAC</strong>
+              <span>
+                Role-specific permissions protect every action.
+              </span>
+            </article>
+
+            <article>
+              <div>
+                <Fuel size={20} />
+              </div>
+              <strong>Cost Control</strong>
+              <span>
+                Monitor fuel, maintenance and fleet expenses.
+              </span>
+            </article>
+
+            <article>
+              <div>
+                <BarChart3 size={20} />
+              </div>
+              <strong>Smart Analytics</strong>
+              <span>
+                Turn operational data into useful insights.
+              </span>
+            </article>
+          </div>
+        </div>
+
+        <div className="auth-showcase-footer">
+          <Sparkles size={17} />
+          Built for modern fleet operations
+        </div>
+      </section>
+
+      <section className="auth-form-section">
+        <div className="auth-form-shell">
+          <div className="auth-mobile-brand">
+            <div className="auth-brand-icon">
+              <BusFront size={24} />
+            </div>
+
+            <div>
+              <strong>TransitOps</strong>
+              <span>Command Center</span>
+            </div>
+          </div>
+
+          <div className="auth-form-heading">
+            <span>SECURE ACCESS</span>
+            <h2>Welcome back</h2>
+            <p>
+              Sign in to access your transport operations
+              workspace.
+            </p>
+          </div>
+
+          <form
+            className="auth-form"
+            onSubmit={handleSubmit}
+          >
+            <label>
+              Work email
+
+              <div className="auth-input">
+                <Mail size={18} />
+
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="name@company.com"
+                  autoComplete="email"
+                  required
+                />
+              </div>
+            </label>
+
+            <label>
+              Password
+
+              <div className="auth-input">
+                <LockKeyhole size={18} />
+
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                  required
+                />
+
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() =>
+                    setShowPassword((current) => !current)
+                  }
+                  aria-label={
+                    showPassword
+                      ? "Hide password"
+                      : "Show password"
+                  }
+                >
+                  {showPassword ? (
+                    <EyeOff size={18} />
+                  ) : (
+                    <Eye size={18} />
+                  )}
+                </button>
+              </div>
+            </label>
+
+            <label>
+              Workspace role
+
+              <div className="auth-input">
+                <UserRound size={18} />
+
+                <select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  required
+                >
+                  {roles.map((role) => (
+                    <option key={role} value={role}>
+                      {role}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </label>
+
+            <div className="auth-options">
+              <label className="remember-option">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(event) =>
+                    setRememberMe(event.target.checked)
+                  }
+                />
+                Remember my email
+              </label>
+
+              <button
+                type="button"
+                className="forgot-password"
+                onClick={() =>
+                  navigate("/forgot-password")
+                }
+              >
+                Forgot password?
+              </button>
+            </div>
+
+            {error && (
+              <div className="auth-error">
+                <ShieldCheck size={18} />
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="auth-submit-button"
+              disabled={loading}
+            >
+              {loading ? (
+                "Signing in..."
+              ) : (
+                <>
+                  Sign in securely
+                  <ArrowRight size={18} />
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="auth-divider">
+            <span>New to TransitOps?</span>
+          </div>
+
+          <Link
+            to="/signup"
+            className="create-account-link"
+          >
+            Create an account request
+            <ArrowRight size={17} />
+          </Link>
+
+          <div className="auth-security-note">
+            <CheckCircle2 size={17} />
+            JWT authentication and role-based permissions are
+            enabled.
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }
 

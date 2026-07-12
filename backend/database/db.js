@@ -13,6 +13,7 @@ db.exec(`
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
+
     role TEXT NOT NULL CHECK (
       role IN (
         'Fleet Manager',
@@ -21,6 +22,7 @@ db.exec(`
         'Financial Analyst'
       )
     ),
+
     failed_login_attempts INTEGER DEFAULT 0,
     is_locked INTEGER DEFAULT 0,
     status TEXT DEFAULT 'Active',
@@ -37,10 +39,17 @@ db.exec(`
     odometer REAL DEFAULT 0,
     acquisition_cost REAL DEFAULT 0,
     region TEXT,
+
     status TEXT NOT NULL DEFAULT 'Available'
       CHECK (
-        status IN ('Available', 'On Trip', 'In Shop', 'Retired')
+        status IN (
+          'Available',
+          'On Trip',
+          'In Shop',
+          'Retired'
+        )
       ),
+
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -53,10 +62,17 @@ db.exec(`
     contact_number TEXT,
     safety_score REAL DEFAULT 100,
     region TEXT,
+
     status TEXT NOT NULL DEFAULT 'Available'
       CHECK (
-        status IN ('Available', 'On Trip', 'Off Duty', 'Suspended')
+        status IN (
+          'Available',
+          'On Trip',
+          'Off Duty',
+          'Suspended'
+        )
       ),
+
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -74,16 +90,26 @@ db.exec(`
     final_odometer REAL DEFAULT 0,
     fuel_consumed REAL DEFAULT 0,
     revenue REAL DEFAULT 0,
+
     status TEXT NOT NULL DEFAULT 'Draft'
       CHECK (
-        status IN ('Draft', 'Dispatched', 'Completed', 'Cancelled')
+        status IN (
+          'Draft',
+          'Dispatched',
+          'Completed',
+          'Cancelled'
+        )
       ),
+
     dispatch_date TEXT,
     completion_date TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (vehicle_id) REFERENCES vehicles(id),
-    FOREIGN KEY (driver_id) REFERENCES drivers(id)
+    FOREIGN KEY (vehicle_id)
+      REFERENCES vehicles(id),
+
+    FOREIGN KEY (driver_id)
+      REFERENCES drivers(id)
   );
 
   CREATE TABLE IF NOT EXISTS maintenance_logs (
@@ -93,14 +119,20 @@ db.exec(`
     description TEXT,
     cost REAL DEFAULT 0,
     service_date TEXT NOT NULL,
+
     status TEXT NOT NULL DEFAULT 'Active'
       CHECK (
-        status IN ('Active', 'Completed')
+        status IN (
+          'Active',
+          'Completed'
+        )
       ),
+
     completed_at TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+    FOREIGN KEY (vehicle_id)
+      REFERENCES vehicles(id)
   );
 
   CREATE TABLE IF NOT EXISTS fuel_logs (
@@ -113,8 +145,11 @@ db.exec(`
     odometer REAL,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (vehicle_id) REFERENCES vehicles(id),
-    FOREIGN KEY (trip_id) REFERENCES trips(id)
+    FOREIGN KEY (vehicle_id)
+      REFERENCES vehicles(id),
+
+    FOREIGN KEY (trip_id)
+      REFERENCES trips(id)
   );
 
   CREATE TABLE IF NOT EXISTS expenses (
@@ -127,8 +162,11 @@ db.exec(`
     expense_date TEXT NOT NULL,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (vehicle_id) REFERENCES vehicles(id),
-    FOREIGN KEY (trip_id) REFERENCES trips(id)
+    FOREIGN KEY (vehicle_id)
+      REFERENCES vehicles(id),
+
+    FOREIGN KEY (trip_id)
+      REFERENCES trips(id)
   );
 
   CREATE TABLE IF NOT EXISTS settings (
@@ -140,6 +178,66 @@ db.exec(`
   );
 `);
 
+/*
+  Safe users-table migrations.
+
+  CREATE TABLE IF NOT EXISTS does not add new columns to an
+  existing table, so each missing column is added separately.
+*/
+const getUserColumnNames = () =>
+  db
+    .prepare("PRAGMA table_info(users)")
+    .all()
+    .map((column) => column.name);
+
+let userColumns = getUserColumnNames();
+
+if (!userColumns.includes("phone")) {
+  db.exec(`
+    ALTER TABLE users
+    ADD COLUMN phone TEXT
+  `);
+
+  console.log(
+    "Users table migrated: phone column added."
+  );
+}
+
+userColumns = getUserColumnNames();
+
+if (!userColumns.includes("reset_token")) {
+  db.exec(`
+    ALTER TABLE users
+    ADD COLUMN reset_token TEXT
+  `);
+
+  console.log(
+    "Users table migrated: reset_token column added."
+  );
+}
+
+userColumns = getUserColumnNames();
+
+if (!userColumns.includes("reset_token_expires")) {
+  db.exec(`
+    ALTER TABLE users
+    ADD COLUMN reset_token_expires TEXT
+  `);
+
+  console.log(
+    "Users table migrated: reset_token_expires column added."
+  );
+}
+
+/*
+  Helpful index for password-reset token searches.
+*/
+db.exec(`
+  CREATE INDEX IF NOT EXISTS
+    idx_users_reset_token
+  ON users(reset_token);
+`);
+
 db.prepare(`
   INSERT OR IGNORE INTO settings (
     id,
@@ -147,7 +245,12 @@ db.prepare(`
     currency,
     distance_unit
   )
-  VALUES (1, 'Gandhinagar Depot GJ', 'INR (Rs)', 'Kilometers')
+  VALUES (
+    1,
+    'Gandhinagar Depot GJ',
+    'INR (Rs)',
+    'Kilometers'
+  )
 `).run();
 
 const seedUsers = [
@@ -155,58 +258,84 @@ const seedUsers = [
     name: "Raven Fleet",
     email: "fleet@transitops.in",
     password: "Fleet@123",
-    role: "Fleet Manager"
+    role: "Fleet Manager",
   },
   {
     name: "Raven Dispatcher",
     email: "dispatcher@transitops.in",
     password: "Dispatch@123",
-    role: "Dispatcher"
+    role: "Dispatcher",
   },
   {
     name: "Raven Safety",
     email: "safety@transitops.in",
     password: "Safety@123",
-    role: "Safety Officer"
+    role: "Safety Officer",
   },
   {
     name: "Raven Finance",
     email: "finance@transitops.in",
     password: "Finance@123",
-    role: "Financial Analyst"
-  }
+    role: "Financial Analyst",
+  },
 ];
 
-const findUser = db.prepare(
-  "SELECT id FROM users WHERE email = ?"
-);
+const findUser = db.prepare(`
+  SELECT id
+  FROM users
+  WHERE LOWER(email) = LOWER(?)
+`);
 
 const insertUser = db.prepare(`
   INSERT INTO users (
     name,
     email,
+    phone,
     password_hash,
-    role
+    role,
+    failed_login_attempts,
+    is_locked,
+    status,
+    reset_token,
+    reset_token_expires
   )
-  VALUES (?, ?, ?, ?)
+  VALUES (
+    ?,
+    ?,
+    NULL,
+    ?,
+    ?,
+    0,
+    0,
+    'Active',
+    NULL,
+    NULL
+  )
 `);
 
 for (const user of seedUsers) {
   const existingUser = findUser.get(user.email);
 
   if (!existingUser) {
-    const passwordHash = bcrypt.hashSync(user.password, 10);
+    const passwordHash = bcrypt.hashSync(
+      user.password,
+      10
+    );
 
     insertUser.run(
       user.name,
-      user.email,
+      user.email.toLowerCase(),
       passwordHash,
       user.role
     );
   }
 }
 
-console.log("TransitOps SQLite database initialized.");
-console.log("Four RBAC demo users are ready.");
+console.log(
+  "TransitOps SQLite database initialized."
+);
+console.log(
+  "Four RBAC seed users are ready."
+);
 
 module.exports = db;

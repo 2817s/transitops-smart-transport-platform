@@ -14,11 +14,13 @@ import {
   Settings,
   ShieldCheck,
   Truck,
+  UserCheck,
   UserRound,
   UsersRound,
   Wrench,
   X,
 } from "lucide-react";
+
 import "./Layout.css";
 
 const navigationItems = [
@@ -57,6 +59,11 @@ const navigationItems = [
     path: "/analytics",
     icon: BarChart3,
   },
+  {
+    label: "Account Requests",
+    path: "/account-requests",
+    icon: UserCheck,
+  },
 ];
 
 function Layout({ children }) {
@@ -80,6 +87,7 @@ function Layout({ children }) {
   const handleLogout = () => {
     localStorage.removeItem("transitops_token");
     localStorage.removeItem("transitops_user");
+
     navigate("/login");
   };
 

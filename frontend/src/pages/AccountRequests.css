@@ -1,0 +1,260 @@
+.account-requests-page {
+  min-height: calc(100vh - 86px);
+  padding: 48px 54px 70px;
+  background: #f5f7fb;
+}
+
+.account-requests-hero {
+  max-width: 1180px;
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.account-requests-hero span {
+  color: #4f46e5;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+}
+
+.account-requests-hero h1 {
+  margin: 8px 0;
+  color: #0f172a;
+  font-size: 42px;
+  letter-spacing: -1.5px;
+}
+
+.account-requests-hero p {
+  margin: 0;
+  color: #64748b;
+}
+
+.account-requests-hero button {
+  height: 46px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 12px;
+  color: white;
+  background: #4f46e5;
+  font-weight: 800;
+}
+
+.request-message {
+  max-width: 1180px;
+  margin: 0 auto 18px;
+  padding: 13px 16px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.request-success {
+  color: #047857;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}
+
+.request-error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.request-summary {
+  max-width: 1180px;
+  margin: 0 auto 22px;
+}
+
+.request-summary > div {
+  width: 260px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: white;
+}
+
+.request-summary svg {
+  color: #4f46e5;
+}
+
+.request-summary span {
+  flex: 1;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.request-summary strong {
+  color: #0f172a;
+  font-size: 25px;
+}
+
+.requests-card {
+  max-width: 1180px;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  background: white;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.05);
+}
+
+.requests-table-wrapper {
+  overflow-x: auto;
+}
+
+.requests-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+}
+
+.requests-table th {
+  padding: 17px;
+  color: #94a3b8;
+  background: #f8fafc;
+  font-size: 10px;
+  text-align: left;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.requests-table td {
+  padding: 18px;
+  border-top: 1px solid #eef2f7;
+  color: #334155;
+  font-size: 13px;
+}
+
+.request-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.request-user > div {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: white;
+  background: #4f46e5;
+  font-weight: 800;
+}
+
+.request-user > span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.request-user strong {
+  color: #0f172a;
+}
+
+.request-user small {
+  color: #94a3b8;
+}
+
+.request-contact {
+  display: grid;
+  gap: 7px;
+}
+
+.request-contact span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.request-role,
+.request-status {
+  padding: 7px 10px;
+  display: inline-flex;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.request-role {
+  color: #4338ca;
+  background: #eef2ff;
+}
+
+.request-status {
+  color: #b45309;
+  background: #fef3c7;
+}
+
+.request-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.request-actions button {
+  height: 36px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 9px;
+  font-weight: 800;
+}
+
+.approve-button {
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  background: #ecfdf5;
+}
+
+.reject-button {
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+}
+
+.requests-empty {
+  min-height: 330px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.requests-empty h2 {
+  margin: 15px 0 6px;
+  color: #0f172a;
+}
+
+.requests-empty p {
+  margin: 0;
+}
+
+@media (max-width: 760px) {
+  .account-requests-page {
+    padding: 30px 18px 50px;
+  }
+
+  .account-requests-hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .account-requests-hero h1 {
+    font-size: 34px;
+  }
+}

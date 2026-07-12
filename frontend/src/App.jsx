@@ -15,6 +15,10 @@ import Maintenance from "./pages/Maintenance";
 import FuelExpenses from "./pages/FuelExpenses";
 import Analytics from "./pages/Analytics";
 import SettingsPage from "./pages/SettingsPage";
+import Signup from "./pages/Signup";
+import AccountRequests from "./pages/AccountRequests";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   return (
@@ -24,6 +28,17 @@ function App() {
           path="/login"
           element={<Login />}
         />
+        <Route
+  path="/forgot-password"
+  element={<ForgotPassword />}
+/>
+
+<Route
+  path="/reset-password/:token"
+  element={<ResetPassword />}
+/>
+
+        <Route path="/signup" element={<Signup />} />
 
         <Route
           path="/dashboard"
@@ -97,6 +112,16 @@ function App() {
     </ProtectedRoute>
   }
 />
+
+<Route
+  path="/account-requests"
+  element={
+    <ProtectedRoute>
+      <AccountRequests />
+    </ProtectedRoute>
+  }
+/>
+
         <Route
           path="/"
           element={<Navigate to="/dashboard" replace />}
