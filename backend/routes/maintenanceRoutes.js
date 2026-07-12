@@ -7,6 +7,7 @@ const {
 } = require("../controllers/maintenanceController");
 
 const authMiddleware = require("../middleware/authMiddleware");
+const allowRoles = require("../middleware/roleMiddleware");
 
 const router = express.Router();
 
@@ -19,12 +20,14 @@ router.get(
 router.post(
   "/",
   authMiddleware,
+  allowRoles("Fleet Manager"),
   createMaintenanceLog
 );
 
 router.patch(
   "/:id/complete",
   authMiddleware,
+  allowRoles("Fleet Manager"),
   completeMaintenance
 );
 

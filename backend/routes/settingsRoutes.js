@@ -1,22 +1,33 @@
 const express = require("express");
 
 const {
-  getVehicles,
-  createVehicle,
-} = require("../controllers/vehicleController");
+  getSettings,
+  updateSettings,
+  getRolePermissions,
+} = require("../controllers/settingsController");
 
 const authMiddleware = require("../middleware/authMiddleware");
 const allowRoles = require("../middleware/roleMiddleware");
 
 const router = express.Router();
 
-router.get("/", authMiddleware, getVehicles);
+router.get(
+  "/",
+  authMiddleware,
+  getSettings
+);
 
-router.post(
+router.put(
   "/",
   authMiddleware,
   allowRoles("Fleet Manager"),
-  createVehicle
+  updateSettings
+);
+
+router.get(
+  "/permissions",
+  authMiddleware,
+  getRolePermissions
 );
 
 module.exports = router;

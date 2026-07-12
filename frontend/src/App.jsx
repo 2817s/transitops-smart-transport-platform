@@ -13,6 +13,8 @@ import Drivers from "./pages/Drivers";
 import Trips from "./pages/Trips";
 import Maintenance from "./pages/Maintenance";
 import FuelExpenses from "./pages/FuelExpenses";
+import Analytics from "./pages/Analytics";
+import SettingsPage from "./pages/SettingsPage";
 
 function App() {
   return (
@@ -77,6 +79,24 @@ function App() {
   }
 />
 
+
+<Route
+  path="/analytics"
+  element={
+    <ProtectedRoute>
+      <Analytics />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/settings"
+  element={
+    <ProtectedRoute>
+      <SettingsPage />
+    </ProtectedRoute>
+  }
+/>
         <Route
           path="/"
           element={<Navigate to="/dashboard" replace />}

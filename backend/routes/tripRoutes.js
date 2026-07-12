@@ -9,6 +9,7 @@ const {
 } = require("../controllers/tripController");
 
 const authMiddleware = require("../middleware/authMiddleware");
+const allowRoles = require("../middleware/roleMiddleware");
 
 const router = express.Router();
 
@@ -20,17 +21,24 @@ router.get(
   getDispatchResources
 );
 
-router.post("/", authMiddleware, createTrip);
+router.post(
+  "/",
+  authMiddleware,
+  allowRoles("Dispatcher", "Fleet Manager"),
+  createTrip
+);
 
 router.patch(
   "/:id/complete",
   authMiddleware,
+  allowRoles("Dispatcher", "Fleet Manager"),
   completeTrip
 );
 
 router.patch(
   "/:id/cancel",
   authMiddleware,
+  allowRoles("Dispatcher", "Fleet Manager"),
   cancelTrip
 );
 
