@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Fleet from "./pages/Fleet";
+import Drivers from "./pages/Drivers";
 
 function App() {
   return (
@@ -33,6 +34,15 @@ function App() {
   element={
     <ProtectedRoute>
       <Fleet />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/drivers"
+  element={
+    <ProtectedRoute>
+      <Drivers />
     </ProtectedRoute>
   }
 />
